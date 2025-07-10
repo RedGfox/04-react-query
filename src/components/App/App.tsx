@@ -5,6 +5,8 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import SearchBar from '../SearchBar/SearchBar';
 import MovieGrid from '../MovieGrid/MovieGrid';
+import Loader from '../Loader/Loader';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 import MovieModal from '../MovieModal/MovieModal';
 import { fetchMovies } from '../../services/movieService';
 import type { Movie } from '../../types/movie';
@@ -16,18 +18,12 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['movies', query, page],
     queryFn: () => fetchMovies({ query, page }),
     enabled: query !== '',
     placeholderData: previousData => previousData,
   });
-
-  useEffect(() => {
-    if (isLoading) {
-      toast('Loading... Please wait');
-    }
-  }, [isLoading]);
 
   useEffect(() => {
     if (data && data.results.length === 0) {
@@ -50,7 +46,8 @@ export default function App() {
   return (
     <>
       <SearchBar onSubmit={handleSearch} />
-      {isLoading || isFetching}
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
       {data && data.results.length > 0 && (
         <>
           {data.total_pages > 1 && (
